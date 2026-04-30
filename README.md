@@ -4,9 +4,9 @@ This project lets you upload an Excel/CSV file, detect likely Indian names from 
 
 ## What it uses
 
-- `naampy` (preferred when available)
-- `IndicNER` as optional secondary detector
-- lightweight heuristic fallback (for reliability if model packages are unavailable)
+- `ethnicolr` as the primary detector (recommended for most Romanized names)
+- `naampy` as optional secondary signal
+- deterministic + heuristic rules as stable fallback
 
 ## Setup
 
@@ -25,7 +25,7 @@ streamlit run app.py
 ## How filtering works
 
 1. Choose your candidate name column.
-2. Pick detector preference (`Naampy first` or `IndicNER first`).
+2. Pick detector preference (`Ethnicolr first (recommended)` or `Naampy first`).
 3. Set a confidence threshold.
 4. Download output Excel with:
    - `indian_names` sheet
@@ -33,4 +33,4 @@ streamlit run app.py
 
 ## Note
 
-`IndicNER` is a named entity model, not a nationality classifier. In this app, it is used with script checks as a lightweight approximation. For best accuracy on Romanized names, keep `Naampy first`.
+For most resume datasets with Romanized names, use `Ethnicolr first (recommended)`.

@@ -295,45 +295,6 @@ def _ethnicolr_detector(name: str) -> DetectorResult | None:
     return DetectorResult(is_indian, confidence, "ethnicolr-prob")
 
 
-@st.cache_resource(show_spinner=False)
-def _load_indic_ner_pipeline():
-    try:
-        from transformers import pipeline
-
-        return pipeline(
-            "token-classification",
-            model="ai4bharat/IndicNER",
-            aggregation_strategy="simple",
-        )
-    except Exception:
-        return None
-
-
-def _indic_ner_detector(name: str) -> DetectorResult | None:
-    """
-    IndicNER alone does not classify nationality.
-    We treat 'PERSON + Indic script' as likely Indian for lightweight filtering.
-    """
-    nlp = _load_indic_ner_pipeline()
-    if nlp is None:
-        return None
-
-    cleaned = _clean_name(name)
-    if not cleaned:
-        return DetectorResult(False, 0.0, "indicner")
-
-    try:
-        entities = nlp(cleaned)
-    except Exception:
-        return None
-
-    has_person = any("PER" in str(e.get("entity_group", "")).upper() for e in entities)
-    has_indic = _contains_indic_script(cleaned)
-    decision = bool(has_person and has_indic)
-    confidence = 0.80 if decision else 0.35
-    return DetectorResult(decision, confidence, "indicner+script")
-
-
 def _heuristic_detector(name: str) -> DetectorResult:
     cleaned = _clean_name(name)
     parts = re.split(r"[\s\.\-']+", cleaned.lower())
@@ -434,11 +395,6 @@ def detect_indian_name(name: str, detector_preference: str) -> DetectorResult:
         result = detector(cleaned)
         if result is not None:
             collected_results.append(result)
-
-    # Keep Indic script as a weak bonus signal, not a primary model.
-    indic_bonus = _indic_ner_detector(cleaned)
-    if indic_bonus is not None and indic_bonus.is_indian:
-        collected_results.append(indic_bonus)
 
     # Always include heuristic as stable fallback signal.
     collected_results.append(_heuristic_detector(cleaned))
