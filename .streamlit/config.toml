@@ -1,0 +1,6 @@
+[server]
+# Local development defaults to avoid intermittent 403s from stale/XSRF-protected sessions.
+enableCORS = false
+enableXsrfProtection = false
+headless = true
+runOnSave = true
